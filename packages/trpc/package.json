@@ -1,0 +1,26 @@
+{
+  "name": "@repo/trpc",
+  "module": "src/index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./trpc": "./src/trpc.ts",
+    "./root": "./src/root.ts",
+    "./server": "./src/server.ts"
+  },
+  "dependencies": {
+    "@repo/auth": "workspace:*",
+    "@repo/store": "workspace:*",
+    "@trpc/server": "^11.4.2",
+    "server-only": "^0.0.1",
+    "superjson": "^2.2.2",
+    "zod": "^3.25.67"
+  }
+}

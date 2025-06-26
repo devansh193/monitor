@@ -1,0 +1,31 @@
+{
+  "name": "shadcn-ui-monorepo",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "prettier": "^3.5.1",
+    "turbo": "^2.4.2",
+    "typescript": "5.7.3"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "packageManager": "bun@1.2.16",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@emnapi/core": "^1.4.3",
+    "prettier-plugin-sort-imports": "^1.8.8",
+    "prettier-plugin-tailwindcss": "^0.6.12"
+  }
+}
