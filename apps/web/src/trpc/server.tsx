@@ -1,11 +1,11 @@
 import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query';
 import { appRouter, createTRPCContext } from '@repo/trpc';
-import type { AppRouter } from '@repo/trpc/root';
+import type { AppRouter } from '@repo/trpc/index';
 import { headers } from 'next/headers';
 import { cache } from 'react';
 
 import { createQueryClient } from './query-client';
-import { auth } from '~/auth/server';
+import auth from '~/auth/server';
 
 /*
  * This wraps the `createTRPCContext` helper and provides the required context for the tRPC API when
@@ -21,7 +21,7 @@ const createContext = cache(async () => {
   });
 });
 
-const getQueryClient = cache(createQueryClient);
+export const getQueryClient = cache(createQueryClient);
 
 export const trpc = createTRPCOptionsProxy<AppRouter>({
   router: appRouter,

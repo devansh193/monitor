@@ -50,6 +50,7 @@ export const createTRPCRouter = t.router;
  *
  * // Logs: [TRPC] user.getProfile took 45ms to execute
  */
+
 const timingMiddleware = t.middleware(async ({ next, path }) => {
   const start = Date.now();
   const result = await next();

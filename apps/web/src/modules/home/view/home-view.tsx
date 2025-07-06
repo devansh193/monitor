@@ -6,11 +6,11 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@workspace/ui/components/card';
-import { Button } from '@workspace/ui/components/button';
-import { Input } from '@workspace/ui/components/input';
-import { Badge } from '@workspace/ui/components/badge';
+} from '@repo/ui/components/card';
+import { Button } from '@repo/ui/components/button';
 import { useMutation } from '@tanstack/react-query';
+import { Input } from '@repo/ui/components/input';
+import { Badge } from '@repo/ui/components/badge';
 import { authClient } from '@/src/auth/client';
 import { useTRPC } from '@/src/trpc/client';
 import { useRouter } from 'next/navigation';
