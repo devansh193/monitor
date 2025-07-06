@@ -1,4 +1,6 @@
 import { Geist, Geist_Mono } from 'next/font/google';
+import { TRPCReactProvider } from '../trpc/client';
+import { ThemeProvider } from 'next-themes';
 import type { Metadata } from 'next';
 import '@repo/ui/globals.css';
 
@@ -23,8 +25,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
-    </html>
+    <TRPCReactProvider>
+      <html lang="en">
+        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+          <ThemeProvider
+            attribute={'class'}
+            defaultTheme="dark"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+          </ThemeProvider>
+        </body>
+      </html>
+    </TRPCReactProvider>
   );
 }

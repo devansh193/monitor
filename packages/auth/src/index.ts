@@ -1,5 +1,5 @@
-import * as authSchema from '../../store/src/schema/auth-schema';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import * as authSchema from '@repo/store/schema/auth-schema';
 import type { BetterAuthOptions } from 'better-auth';
 import { oAuthProxy } from 'better-auth/plugins';
 import { betterAuth } from 'better-auth';

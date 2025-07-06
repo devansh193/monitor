@@ -10,7 +10,6 @@ import { useState } from 'react';
 import type { AppRouter } from '@repo/trpc';
 
 import { createQueryClient } from './query-client';
-import { env } from '@repo/auth/env';
 
 let clientQueryClientSingleton: QueryClient | undefined = undefined;
 const getQueryClient = () => {
@@ -33,12 +32,12 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
       links: [
         loggerLink({
           enabled: (op) =>
-            env.NODE_ENV === 'development' ||
+            process.env.NODE_ENV === 'development' ||
             (op.direction === 'down' && op.result instanceof Error),
         }),
         httpBatchStreamLink({
           transformer: SuperJSON,
-          url: getBaseUrl() + '/api/trpc',
+          url: getUrl(),
           headers() {
             const headers = new Headers();
             headers.set('x-trpc-source', 'nextjs-react');
@@ -58,8 +57,10 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
   );
 }
 
-const getBaseUrl = () => {
-  if (typeof window !== 'undefined') return window.location.origin;
-  if (env.BASE_URL) return `https://${env.BASE_URL}`;
-  return `http://localhost:${process.env.PORT ?? 3000}`;
-};
+function getUrl() {
+  const base = (() => {
+    if (typeof window !== 'undefined') return '';
+    return process.env.NEXT_PUBLIC_APP_URL;
+  })();
+  return `${base}/api/trpc`;
+}

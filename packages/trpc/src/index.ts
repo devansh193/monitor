@@ -1,8 +1,8 @@
 import type { inferRouterInputs, inferRouterOutputs } from '@trpc/server';
 
-import { createTRPCContext } from './trpc';
-import type { AppRouter } from './root';
-import { appRouter } from './root';
+import { createTRPCContext } from './init';
+import type { AppRouter } from './_app';
+import { appRouter } from './_app';
 
 /**
  * Inference helpers for input types
