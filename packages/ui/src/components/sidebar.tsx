@@ -1,8 +1,8 @@
 'use client';
 
 import { cva, VariantProps } from 'class-variance-authority';
+import { MenuIcon, SidebarIcon } from 'lucide-react';
 import { Slot } from '@radix-ui/react-slot';
-import { MenuIcon } from 'lucide-react';
 import * as React from 'react';
 
 import {
@@ -266,7 +266,7 @@ function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<t
       }}
       {...props}
     >
-      <MenuIcon />
+      <SidebarIcon />
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   );

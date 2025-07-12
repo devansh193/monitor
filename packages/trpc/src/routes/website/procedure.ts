@@ -1,4 +1,7 @@
+import type { HttpMethod, MonitorRequestMessage } from '@repo/kafka/types';
 import { createTRPCRouter, protectedProcedure } from '../../init';
+import { getTopicForInterval } from '@repo/kafka/config';
+import { createProducerClient } from '@repo/kafka';
 import { websites } from '@repo/store/schema';
 import { TRPCError } from '@trpc/server';
 import { and, eq } from 'drizzle-orm';
@@ -14,27 +17,21 @@ export const websiteRouter = createTRPCRouter({
     )
     .query(async ({ input, ctx }) => {
       const userId = ctx.session.user.id;
-      const existingWebsite = await db
+      const website = await db
         .select()
         .from(websites)
         .where(and(eq(websites.userId, userId), eq(websites.id, input.id)));
-      if (!existingWebsite) {
+      if (!website) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: `Website with ${input.id} not found.`,
         });
       }
-      return existingWebsite;
+      return website;
     }),
   getMany: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.session.user.id;
     const allWebsites = await db.select().from(websites).where(eq(websites.userId, userId));
-    if (!allWebsites || allWebsites.length === 0) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: `No website with usedId:${ctx.session.user.id} found.`,
-      });
-    }
     return allWebsites;
   }),
   create: protectedProcedure
@@ -45,9 +42,7 @@ export const websiteRouter = createTRPCRouter({
         monitoringIntervalSeconds: z
           .enum(['5', '10', '15', '30', '60', '120', '180', '300', '600', '900'])
           .transform((val) => parseInt(val)),
-        httpMethod: z
-          .enum(['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'])
-          .default('GET'),
+        httpMethod: z.enum(['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD']).default('GET'),
         httpHeader: z.record(z.string()).optional(),
         requestBody: z.string().optional(),
         expectedResponseCode: z.number().min(100).max(599).default(200),
@@ -76,27 +71,67 @@ export const websiteRouter = createTRPCRouter({
           throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Unauthorized' });
         }
         const userId = session.user.id;
-        const existingWebsite = await db.select().from(websites).where(eq(websites.url, url));
+        const existingWebsite = await db
+          .select({ id: websites.id })
+          .from(websites)
+          .where(and(eq(websites.url, url), eq(websites.userId, userId)))
+          .limit(1);
+
         if (existingWebsite.length > 0) {
           throw new TRPCError({
             code: 'BAD_REQUEST',
             message: 'Website already exists',
           });
         }
-        const newWebsite = await db.insert(websites).values({
-          userId,
-          name,
-          url,
-          monitoringIntervalSeconds,
-          httpMethod,
-          httpHeaders: httpHeader,
-          requestBody,
-          timeoutSeconds,
-          isActive,
-          expectedResponseCode,
-          expectedResponseBody,
+        await db.transaction(async (tx) => {
+          const [newWebsite] = await tx
+            .insert(websites)
+            .values({
+              userId,
+              name,
+              url,
+              monitoringIntervalSeconds,
+              httpMethod,
+              httpHeaders: httpHeader,
+              requestBody,
+              timeoutSeconds,
+              isActive,
+              expectedResponseCode,
+              expectedResponseBody,
+            })
+            .returning();
+          if (!newWebsite) {
+            throw new TRPCError({
+              code: 'INTERNAL_SERVER_ERROR',
+              message: 'Failed to create website',
+            });
+          }
+          const topic = getTopicForInterval(monitoringIntervalSeconds);
+          if (!topic) {
+            throw new TRPCError({
+              code: 'INTERNAL_SERVER_ERROR',
+              message: 'Failed to get topic',
+            });
+          }
+          const producer = await createProducerClient('website-monitor-producer');
+          const message: MonitorRequestMessage = {
+            configId: newWebsite.id,
+            url: newWebsite.url,
+            method: newWebsite.httpMethod as HttpMethod,
+            headers: (newWebsite.httpHeaders ?? {}) as Record<string, string>,
+            body: newWebsite.requestBody ?? undefined,
+            expectedStatusCode: newWebsite.expectedResponseCode,
+            intervalSeconds: monitoringIntervalSeconds,
+            timeoutMs: timeoutSeconds * 1000,
+            scheduledAt: Date.now(),
+            attempt: 1,
+            maxRetries: 0,
+          };
+          await producer
+            .sendSingle(topic, message, newWebsite.id)
+            .catch((err) => console.error('Kafka send failed', err));
+          return newWebsite;
         });
-        return newWebsite;
       } catch (error) {
         console.error(error);
         throw new TRPCError({

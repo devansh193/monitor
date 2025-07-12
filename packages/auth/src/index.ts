@@ -1,7 +1,7 @@
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { bearer, jwt, oAuthProxy } from 'better-auth/plugins';
 import * as authSchema from '@repo/store/schema/auth-schema';
 import type { BetterAuthOptions } from 'better-auth';
-import { oAuthProxy } from 'better-auth/plugins';
 import { betterAuth } from 'better-auth';
 import db from '@repo/store/client';
 
@@ -20,6 +20,10 @@ export function initAuth(options: {
       },
     }),
     session: {
+      cookieCache: {
+        enabled: true,
+        maxAge: 60 * 60 * 24 * 30,
+      },
       expiresIn: 60 * 60 * 24 * 7,
       updateAge: 60 * 60 * 24,
     },
@@ -33,6 +37,8 @@ export function initAuth(options: {
         currentURL: options.baseUrl,
         productionURL: options.productionUrl,
       }),
+      jwt(),
+      bearer(),
     ],
     rateLimit: {
       window: 10,

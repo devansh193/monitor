@@ -19,7 +19,7 @@ export const SignInView = () => {
               <p className="text-neutral-400">Sign in to continue to your account</p>
             </div>
             <Button
-              className="w-[350px] rounded-lg border border-black bg-[#262628] py-5 inset-shadow-sm inset-shadow-[#4B4B4D]/80 hover:bg-[#272729]/80 hover:inset-shadow-[#4B4B4D]/40 active:translate-x-px active:scale-[0.99] active:shadow-inner"
+              className="w-[350px] rounded-lg border border-black bg-[#262628] py-5 text-white inset-shadow-sm inset-shadow-[#4B4B4D]/80 hover:bg-[#272729]/80 hover:inset-shadow-[#4B4B4D]/40 active:translate-x-px active:scale-[0.99] active:shadow-inner"
               type="button"
               onClick={handleLoginWithGoogle}
             >

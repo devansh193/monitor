@@ -1,17 +1,20 @@
 import { MonitorSidebar } from '../components/monitor-sidebar';
 import { SidebarProvider } from '@repo/ui/components/sidebar';
 import { MonitorNavbar } from '../components/monitor-navbar';
+
 interface Props {
   children: React.ReactNode;
 }
 export const MonitorLayout = ({ children }: Props) => {
   return (
     <SidebarProvider>
-      <div className="w-full">
-        <MonitorNavbar />
-        <div className="flex min-h-screen pt-[4rem]">
+      <div className="bg-sidebar w-full">
+        <div className="flex min-h-screen">
           <MonitorSidebar />
-          <main className="flex-1 overflow-y-auto">{children}</main>
+          <main className="bg-background m-2 flex-1 overflow-y-auto rounded-xl">
+            <MonitorNavbar />
+            {children}
+          </main>
         </div>
       </div>
     </SidebarProvider>

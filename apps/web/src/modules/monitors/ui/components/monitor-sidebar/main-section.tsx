@@ -1,4 +1,5 @@
 'use client';
+
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -6,16 +7,21 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@repo/ui/components/sidebar';
-import { BoltIcon, LogsIcon, SettingsIcon } from 'lucide-react';
+import {
+  LogsIcon,
+  SettingsIcon,
+  ChartNoAxesColumnIncreasingIcon,
+  ActivityIcon,
+} from 'lucide-react';
 import { authClient } from '@/src/auth/client';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
 const items = [
   {
-    title: 'Uptime',
+    title: 'Monitors',
     url: '/monitors',
-    icon: BoltIcon,
+    icon: ActivityIcon,
     auth: true,
   },
   {
@@ -23,6 +29,12 @@ const items = [
     url: '/logs',
     icon: LogsIcon,
     auth: true,
+  },
+  {
+    title: 'Analytics',
+    url: '/analytics',
+    icon: ChartNoAxesColumnIncreasingIcon,
+    auth: false,
   },
   {
     title: 'Settings',
@@ -35,6 +47,7 @@ const items = [
 export const MainSection = () => {
   const pathname = usePathname();
   const session = authClient.getSession();
+
   return (
     <SidebarGroup>
       <SidebarGroupContent>
@@ -48,21 +61,17 @@ export const MainSection = () => {
                 onClick={(e) => {
                   if (!session && item.auth) {
                     e.preventDefault();
-                    return (
-                      authClient.signIn.social({
-                        provider: 'google',
-                        callbackURL: `${window.location.origin}/monitors`,
-                      }),
-                      {
-                        error: 'Login redirect failed',
-                      }
-                    );
+                    authClient.signIn.social({
+                      provider: 'google',
+                      callbackURL: `${window.location.origin}/monitors`,
+                    });
                   }
                 }}
+                className="hover:bg-muted w-full rounded-md px-3 py-2 transition"
               >
-                <Link href={item.url} className="flex items-center gap-4">
-                  <item.icon />
-                  <span className="text-sm">{item.title}</span>
+                <Link href={item.url} className="flex w-full items-center gap-2 text-sm">
+                  <item.icon className="text-muted-foreground h-5 w-5" />
+                  <span>{item.title}</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

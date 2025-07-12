@@ -1,4 +1,4 @@
-import { websiteRouter } from './routes/website/procedute';
+import { websiteRouter } from './routes/website/procedure';
 import { createTRPCRouter } from './init';
 
 export const appRouter = createTRPCRouter({
