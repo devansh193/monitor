@@ -1,7 +1,7 @@
 import type { HttpMethod, MonitorRequestMessage } from '@repo/kafka/types';
 import { createTRPCRouter, protectedProcedure } from '../../init';
 import { getTopicForInterval } from '@repo/kafka/config';
-import { createProducerClient } from '@repo/kafka';
+import { getProducerClient } from '@repo/kafka/client';
 import { websites } from '@repo/store/schema';
 import { TRPCError } from '@trpc/server';
 import { and, eq } from 'drizzle-orm';
@@ -83,55 +83,38 @@ export const websiteRouter = createTRPCRouter({
             message: 'Website already exists',
           });
         }
-        await db.transaction(async (tx) => {
-          const [newWebsite] = await tx
-            .insert(websites)
-            .values({
-              userId,
-              name,
-              url,
-              monitoringIntervalSeconds,
-              httpMethod,
-              httpHeaders: httpHeader,
-              requestBody,
-              timeoutSeconds,
-              isActive,
-              expectedResponseCode,
-              expectedResponseBody,
-            })
-            .returning();
-          if (!newWebsite) {
-            throw new TRPCError({
-              code: 'INTERNAL_SERVER_ERROR',
-              message: 'Failed to create website',
-            });
-          }
-          const topic = getTopicForInterval(monitoringIntervalSeconds);
-          if (!topic) {
-            throw new TRPCError({
-              code: 'INTERNAL_SERVER_ERROR',
-              message: 'Failed to get topic',
-            });
-          }
-          const producer = await createProducerClient('website-monitor-producer');
-          const message: MonitorRequestMessage = {
-            configId: newWebsite.id,
-            url: newWebsite.url,
-            method: newWebsite.httpMethod as HttpMethod,
-            headers: (newWebsite.httpHeaders ?? {}) as Record<string, string>,
-            body: newWebsite.requestBody ?? undefined,
-            expectedStatusCode: newWebsite.expectedResponseCode,
-            intervalSeconds: monitoringIntervalSeconds,
-            timeoutMs: timeoutSeconds * 1000,
-            scheduledAt: Date.now(),
-            attempt: 1,
-            maxRetries: 0,
-          };
-          await producer
-            .sendSingle(topic, message, newWebsite.id)
-            .catch((err) => console.error('Kafka send failed', err));
-          return newWebsite;
-        });
+
+        const [newWebsite] = await db
+          .insert(websites)
+          .values({
+            userId,
+            name,
+            url,
+            monitoringIntervalSeconds,
+            httpMethod,
+            httpHeaders: httpHeader,
+            requestBody,
+            timeoutSeconds,
+            isActive,
+            expectedResponseCode,
+            expectedResponseBody,
+          })
+          .returning();
+        if (!newWebsite) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Failed to create website',
+          });
+        }
+        const topic = getTopicForInterval(monitoringIntervalSeconds);
+        if (!topic) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Failed to get topic',
+          });
+        }
+
+        return newWebsite;
       } catch (error) {
         console.error(error);
         throw new TRPCError({

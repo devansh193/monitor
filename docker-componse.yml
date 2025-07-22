@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.1
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka-broker:
+    image: confluentinc/cp-kafka:7.3.1
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker:9092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: uptime
+      POSTGRES_USER: uptime_user
+      POSTGRES_PASSWORD: uptime_pass
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  database:
+    build:
+      context: .
+      dockerfile: packages/database/Dockerfile
+    env_file: .env
+    depends_on:
+      - postgres
+
+
+  authentication:
+    build:
+      context: .
+      dockerfile: packages/authentication/Dockerfile
+    env_file: .env
+    depends_on:
+      - database
+      - kafka-broker
+    ports:
+      - "4001:4001"
+
+  trpc:
+    build:
+      context: .
+      dockerfile: packages/trpc/Dockerfile
+    env_file: .env
+    depends_on:
+      - authentication
+      - database
+    ports:
+      - "4002:4002"
+
+  ui:
+    build:
+      context: .
+      dockerfile: packages/ui/Dockerfile
+    env_file: .env
+    depends_on:
+      - trpc
+    ports:
+      - "6000:6000"
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    env_file: .env
+    depends_on:
+      - ui
+      - trpc
+      - authentication
+    ports:
+      - "3000:3000"
+
+networks:
+  default:
+    driver: bridge

@@ -1,27 +1,25 @@
-// Client exports
 export {
   KafkaClient,
   ConnectionManager,
   AdminClient,
   TopicManager,
   ProducerClient,
-  MessageSender,
-  ConsumerClient,
-  MessageHandlerFactory,
   createKafkaClient,
   createAdminClient,
-  createProducerClient,
-  createConsumerClient,
   disconnectAllClients,
   getKafkaClient,
 } from './client';
 
-export type { MessageHandler } from './client';
-
 // Configuration exports
 export { getConfig } from './config';
 export type { Config } from './config';
-export { getTopicForInterval, getAllMonitorTopics, KAFKA_CONFIG } from './config/topics';
+export {
+  TOPIC_CONFIGS,
+  getTopicConfig,
+  getAllTopicConfigs,
+  getEventTopics,
+  type TopicConfig,
+} from './config/topic-configs';
 
 // Type exports
 export type {
@@ -34,6 +32,14 @@ export type {
   MonitorResult,
   AlertMessage,
   HealthMetrics,
+  MonitorExecutionEvent,
+  AlertEvent,
+  ConfigUpdateEvent,
+  ConfigErrorEvent,
+  SystemHealthEvent,
+  MetricsEvent,
+  KafkaEvent,
+  EventType,
   SupportedInterval,
   KafkaTopic,
 } from './types';

@@ -4,6 +4,12 @@ import { type Admin, type Kafka } from 'kafkajs';
 
 const logger = createAppLogger('kafka-admin-client');
 
+interface Topic {
+  topic: string;
+  numPartitions: number;
+  replicationFactor: number;
+}
+
 export class AdminClient {
   private admin: Admin | null = null;
   private readonly connectionManager: ConnectionManager;
@@ -33,13 +39,7 @@ export class AdminClient {
     }
   }
 
-  async createTopics(
-    topics: Array<{
-      topic: string;
-      numPartitions: number;
-      replicationFactor: number;
-    }>,
-  ): Promise<void> {
+  async createTopics(topics: Topic[]): Promise<void> {
     const admin = await this.getAdmin();
 
     try {
