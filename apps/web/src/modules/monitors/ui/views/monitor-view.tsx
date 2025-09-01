@@ -6,8 +6,8 @@ import { Suspense } from 'react';
 
 export const MonitorView = () => {
   return (
-    <div className="mx-auto mb-10 flex max-w-[2400px] flex-col gap-y-6 px-4 pt-2.5">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-y-6">
+    <div className="mb-10 flex flex-col gap-y-6 px-4 pt-2.5">
+      <div className="flex w-full flex-col gap-y-6">
         <MonitorHeader />
         <ErrorBoundary fallback={<MonitorError />}>
           <Suspense fallback={<LoadingScreen />}>

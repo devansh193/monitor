@@ -2,6 +2,8 @@ import { initTRPC, TRPCError } from '@trpc/server';
 import { z, ZodError } from 'zod/v4';
 import superjson from 'superjson';
 
+// import { isAuthenticated } from './middlewares/require_authenticated_user';
+import { timingMiddleware } from './middlewares/timing_middleware';
 import type { Auth } from '@repo/auth/src/index';
 import { cache } from 'react';
 
@@ -13,10 +15,11 @@ export const createTRPCContext = cache(async (opts: { headers: Headers; auth: Au
   return {
     authApi,
     session,
+    headers: opts.headers,
   };
 });
 
-const t = initTRPC.context<typeof createTRPCContext>().create({
+export const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
   errorFormatter: ({ shape, error }) => ({
     ...shape,
@@ -30,37 +33,6 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
   }),
 });
 
-export const createTRPCRouter = t.router;
-
-/**
- * Timing middleware for tRPC procedures
- *
- * Measures and logs the execution time of each tRPC procedure call.
- * This middleware is applied to both public and protected procedures
- * to provide performance monitoring and debugging capabilities.
- *
- * @param next - The next middleware or procedure in the chain
- * @param path - The tRPC procedure path being executed
- * @returns The result of the procedure execution
- *
- * @example
- * // Applied automatically to all procedures:
- * export const publicProcedure = t.procedure.use(timingMiddleware);
- * export const protectedProcedure = t.procedure.use(isAuthenticated).use(timingMiddleware);
- *
- * // Logs: [TRPC] user.getProfile took 45ms to execute
- */
-
-const timingMiddleware = t.middleware(async ({ next, path }) => {
-  const start = Date.now();
-  const result = await next();
-  const end = Date.now();
-  console.log(`[TRPC] ${path} took ${end - start}ms to execute`);
-  return result;
-});
-
-export const publicProcedure = t.procedure.use(timingMiddleware);
-
 const isAuthenticated = t.middleware(async ({ ctx, next }) => {
   if (!ctx.session?.user) {
     throw new TRPCError({ code: 'UNAUTHORIZED' });
@@ -72,4 +44,7 @@ const isAuthenticated = t.middleware(async ({ ctx, next }) => {
   });
 });
 
-export const protectedProcedure = t.procedure.use(isAuthenticated).use(timingMiddleware);
+export const createTRPCRouter = t.router;
+
+export const publicProcedure = t.procedure;
+export const protectedProcedure = t.procedure.use(isAuthenticated);

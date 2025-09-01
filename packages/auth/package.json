@@ -10,8 +10,9 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@repo/db": "workspace:*",
+    "@repo/store": "workspace:*",
     "@t3-oss/env-nextjs": "^0.13.8",
-    "better-auth": "^1.2.9"
+    "better-auth": "^1.2.9",
+    "mongodb": "^6.18.0"
   }
 }

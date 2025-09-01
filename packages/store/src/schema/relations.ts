@@ -3,8 +3,8 @@ import { UptimeCheck } from './uptime_check';
 
 import { account } from './auth-schema';
 import { relations } from 'drizzle-orm';
+import { websites } from './websites';
 import { user } from './auth-schema';
-import { websites } from './website';
 
 export const usersRelations = relations(user, ({ one, many }) => ({
   accounts: many(account),

@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 export const MonitorHeader = () => {
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col">
+    <div className="flex w-full flex-col">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-x-2">
           <h1 className="hidden text-xl font-medium md:block">Monitors</h1>

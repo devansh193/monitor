@@ -3,6 +3,12 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { getQueryClient, trpc } from '@/src/trpc/server';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Suspense } from 'react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Monitors',
+  description: 'Monitor your websites and APIs with Better Uptime.',
+};
 
 const Page = () => {
   const queryClient = getQueryClient();

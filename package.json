@@ -6,7 +6,9 @@
     "build": "turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "kafka:setup": "bun run scripts/setup-kafka.ts",
+    "kafka:topics": "bun run scripts/setup-kafka.ts"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

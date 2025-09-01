@@ -1,3 +1,4 @@
+// import { mongodbAdapter } from 'better-auth/adapters/mongodb';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { bearer, jwt, oAuthProxy } from 'better-auth/plugins';
 import * as authSchema from '@repo/store/schema/auth-schema';
@@ -52,7 +53,7 @@ export function initAuth(options: {
         redirectURI: `${options.productionUrl}/api/auth/callback/google`,
       },
     },
-    trustedOrigins: ['expo://'],
+    trustedOrigins: ['expo://', options.productionUrl, options.baseUrl],
   } satisfies BetterAuthOptions;
 
   return betterAuth(config);

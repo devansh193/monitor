@@ -1,5 +1,5 @@
 import { boolean, index, integer, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
-import { websites } from './website';
+import { websites } from './websites';
 import { sql } from 'drizzle-orm';
 
 export const UptimeCheck = pgTable(

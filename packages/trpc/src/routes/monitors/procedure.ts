@@ -1,7 +1,4 @@
-import type { HttpMethod, MonitorRequestMessage } from '@repo/kafka/types';
-import { createTRPCRouter, protectedProcedure } from '../../init';
-import { getTopicForInterval } from '@repo/kafka/config';
-import { getProducerClient } from '@repo/kafka/client';
+import { createTRPCRouter, protectedProcedure, publicProcedure } from '../../init';
 import { websites } from '@repo/store/schema';
 import { TRPCError } from '@trpc/server';
 import { and, eq } from 'drizzle-orm';
@@ -9,6 +6,40 @@ import db from '@repo/store/client';
 import z from 'zod';
 
 export const websiteRouter = createTRPCRouter({
+  getActive: publicProcedure
+    .input(
+      z.object({
+        name: z.string(),
+        url: z.string().url().max(2048),
+        next_check_time: z.date(),
+      }),
+    )
+    .query(async ({ input }) => {
+      const { name, url, next_check_time } = input;
+      if (!name || !url || !next_check_time) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Missing required fields',
+        });
+      }
+      const [website] = await db
+        .select()
+        .from(websites)
+        .where(
+          and(
+            eq(websites.url, url),
+            eq(websites.name, name),
+            // eq(websites.nextCheckTime, next_check_time),
+          ),
+        );
+      if (!website) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Monitors not found.',
+        });
+      }
+      return website;
+    }),
   getOne: protectedProcedure
     .input(
       z.object({
@@ -16,7 +47,7 @@ export const websiteRouter = createTRPCRouter({
       }),
     )
     .query(async ({ input, ctx }) => {
-      const userId = ctx.session.user.id;
+      const { id: userId } = ctx.session.user;
       const website = await db
         .select()
         .from(websites)
@@ -30,7 +61,7 @@ export const websiteRouter = createTRPCRouter({
       return website;
     }),
   getMany: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.session.user.id;
+    const { id: userId } = ctx.session.user;
     const allWebsites = await db.select().from(websites).where(eq(websites.userId, userId));
     return allWebsites;
   }),
@@ -66,11 +97,7 @@ export const websiteRouter = createTRPCRouter({
           isActive,
         } = input;
         const { session } = ctx;
-
-        if (!session?.user) {
-          throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Unauthorized' });
-        }
-        const userId = session.user.id;
+        const { id: userId } = session.user;
         const existingWebsite = await db
           .select({ id: websites.id })
           .from(websites)
@@ -106,14 +133,6 @@ export const websiteRouter = createTRPCRouter({
             message: 'Failed to create website',
           });
         }
-        const topic = getTopicForInterval(monitoringIntervalSeconds);
-        if (!topic) {
-          throw new TRPCError({
-            code: 'INTERNAL_SERVER_ERROR',
-            message: 'Failed to get topic',
-          });
-        }
-
         return newWebsite;
       } catch (error) {
         console.error(error);

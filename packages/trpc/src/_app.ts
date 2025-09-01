@@ -1,4 +1,4 @@
-import { websiteRouter } from './routes/website/procedure';
+import { websiteRouter } from './routes/monitors/procedure';
 import { helloWorld } from './routes/user/procedure';
 import { createTRPCRouter } from './init';
 

@@ -22,7 +22,7 @@ export const websites = pgTable(
       .references(() => user.id, { onDelete: 'cascade' }),
     name: varchar('name', { length: 255 }).notNull(),
     url: varchar('url', { length: 2048 }).notNull(),
-    monitoringIntervalSeconds: integer('monitoring_interval_seconds').notNull().default(60),
+    monitoringIntervalSeconds: integer('monitoring_interval_seconds').notNull().default(10),
     httpMethod: varchar('http_method', { length: 10 }).notNull().default('GET'),
     httpHeaders: jsonb('http_headers'),
     requestBody: text('request_body'),
@@ -30,7 +30,7 @@ export const websites = pgTable(
     expectedResponseBody: varchar('expected_response_body', { length: 500 }),
     timeoutSeconds: integer('timeout_seconds').notNull().default(10),
     isActive: boolean('is_active').notNull().default(true),
-    lastCheckAt: timestamp('last_check_at', { withTimezone: true, mode: 'string' }),
+    lastCheckAt: timestamp('last_check_at', { withTimezone: true, mode: 'date' }).defaultNow(),
     lastStatus: varchar('last_status', { length: 10 }),
     statusChangedAt: timestamp('status_changed_at', { withTimezone: true, mode: 'string' }),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
